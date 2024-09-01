@@ -9,20 +9,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token['username'] = user.username
+        token["username"] = user.username
         return token
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'password', 'email', 'first_name', 'last_name')
+        fields = ("username", "password", "email")
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                _("Email is already registered.")
-            )
+            raise serializers.ValidationError(_("Email is already registered."))
         return value
 
     def save(self, **kwargs):

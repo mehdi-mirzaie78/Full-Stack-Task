@@ -1,8 +1,23 @@
-import React from "react";
+"use client";
+
+import React, { FormEvent } from "react";
 
 const NewBlogPage = () => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch("http://127.0.0.1:8000/api/blogs/", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+  };
+
   return (
-    <form className="max-w-3xl mx-auto p-8 m-10 border rounded-md">
+    <form
+      className="max-w-3xl mx-auto p-8 m-10 border rounded-md"
+      onSubmit={onSubmit}
+    >
       <label
         className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
         htmlFor="title"
@@ -38,6 +53,7 @@ const NewBlogPage = () => {
         className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         placeholder="Type something ..."
       ></textarea>
+      <button type="submit">Add</button>
     </form>
   );
 };
