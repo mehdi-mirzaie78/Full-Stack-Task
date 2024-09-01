@@ -138,3 +138,4 @@ GitHub.sublime-settings
 .histor
 /backend/blog/migrations/0001_initial.py
 /backend/accounts/migrations/0001_initial.py
+/.idea/*
