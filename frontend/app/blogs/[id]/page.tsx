@@ -1,6 +1,5 @@
 import { Blog } from "@/app/interfaces/Blog";
 import React from "react";
-import BlogCard from "../BlogCard";
 import Link from "next/link";
 
 interface Props {

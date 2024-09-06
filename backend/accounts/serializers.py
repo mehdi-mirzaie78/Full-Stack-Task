@@ -6,11 +6,17 @@ from .models import User
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
         token["username"] = user.username
         return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data["username"] = self.user.get_username()
+        return data
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -31,14 +37,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializerWithTokens(serializers.ModelSerializer):
-    access_token = serializers.SerializerMethodField()
-    refresh_token = serializers.SerializerMethodField()
+    access = serializers.SerializerMethodField()
+    refresh = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            "access_token",
-            "refresh_token",
+            "access",
+            "refresh",
             "username",
             "email",
             "first_name",
@@ -46,11 +52,11 @@ class UserSerializerWithTokens(serializers.ModelSerializer):
         ]
 
     @staticmethod
-    def get_access_token(user: User):
+    def get_access(user: User):
         refresh = RefreshToken.for_user(user)
         return str(refresh.access_token)
 
     @staticmethod
-    def get_refresh_token(user: User):
+    def get_refresh(user: User):
         refresh = RefreshToken.for_user(user)
         return str(refresh)

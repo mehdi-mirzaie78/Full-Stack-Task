@@ -4,10 +4,17 @@ from django.core.validators import FileExtensionValidator
 
 
 class Blog(models.Model):
-    user = models.ForeignKey('accounts.User', related_name="blogs", on_delete=models.CASCADE, verbose_name=_("User"))
+    user = models.ForeignKey(
+        "accounts.User",
+        related_name="blogs",
+        on_delete=models.CASCADE,
+        verbose_name=_("User"),
+    )
     title = models.CharField(verbose_name=_("Title"), max_length=120)
     content = models.TextField(verbose_name=_("Content"))
-    image = models.ImageField(upload_to='images/blog/', validators=[FileExtensionValidator(["jpeg"])])
+    image = models.ImageField(
+        upload_to="images/blog/", validators=[FileExtensionValidator(["jpeg", "jpg"])]
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         editable=False,
