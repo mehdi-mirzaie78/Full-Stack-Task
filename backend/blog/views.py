@@ -8,7 +8,7 @@ from .permissions import IsBlogOwner
 
 class BlogViewSet(ModelViewSet):
     serializer_class = BlogSerializer
-    queryset = Blog.objects.all()
+    queryset = Blog.objects.all().order_by("-created_at")
 
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:

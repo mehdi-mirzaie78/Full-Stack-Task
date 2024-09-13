@@ -1,51 +1,137 @@
+"use client";
+
 import { Blog } from "@/app/interfaces/Blog";
-import React from "react";
+import Image from "next/image";
 import Link from "next/link";
+import useAuthQueryStore from "@/app/store/authStore";
+import { useEffect, useState } from "react";
+import DateTime from "@/app/components/DateTime";
+import { BASE_API_URL } from "@/app/constants/config";
+import { useRouter } from "next/navigation";
 
 interface Props {
   params: { id: number };
 }
 
-const BlogDetailPage = async ({ params: { id: pk } }: Props) => {
-  const res = await fetch(`http://127.0.0.1:8000/api/blogs/${pk}`, {
-    cache: "no-store",
-  });
-  const blog: Blog = await res.json();
-  const { id, user, title, content, image, createdAt, updatedAt } = blog;
+const BlogDetailPage = ({ params: { id } }: Props) => {
+  const router = useRouter();
+  const [blog, setBlog] = useState<Blog | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { username: currentUser, access } = useAuthQueryStore(
+    (state) => state.authQuery
+  );
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    const fetchBlog = async () => {
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/blogs/${id}`, {
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const fetchedBlog: Blog = await res.json();
+          setBlog(fetchedBlog);
+          setIsOwner(fetchedBlog.user === currentUser);
+        }
+      } catch (error) {
+        console.error("Failed to fetch blog:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlog();
+  }, [id, currentUser]);
+
+  if (loading) return <p>Loading...</p>;
+
+  if (!blog) return <p>Blog not found.</p>;
+
+  const { user, title, content, image, createdAt } = blog;
+
+  const handleDelete = async () => {
+    try {
+      const resp = await fetch(`${BASE_API_URL}/blogs/${id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${access}`,
+        },
+      });
+
+      if (resp.status === 204) {
+        router.push("/blogs");
+        router.refresh();
+      } else {
+        throw new Error("Failed to delete the blog");
+      }
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+    }
+  };
+
   return (
-    <>
-      <Link href={"/blogs"}>
-        <button className="m-5 border p-2 rounded">Go Back</button>
+    <div className="max-sm:mx-2 md:mx-5">
+      <Link href="/blogs">
+        <button className="btn btn-xs sm:btn-sm md:btn-md">Go Back</button>
       </Link>
-      <div className="mx-auto my-10 flex-row max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-        <img
-          className="rounded-t-lg mx-auto object-cover"
-          src={image}
-          alt={title}
-        />
+      <div className="mx-auto my-5 sm:flex rounded-lg">
+        <div className="sm:w-full md:w-2/4 flex justify-center">
+          <div className="relative w-full h-80 md:h-96 lg:h-[700px]">
+            <Image
+              className="rounded-lg object-cover"
+              src={image}
+              alt={title}
+              layout="fill"
+              objectFit="cover"
+              priority
+            />
+          </div>
+        </div>
 
-        <div className="p-5">
-          <div className="flex flex-row justify-between mb-2">
-            <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        <div className="sm:w-full md:w-2/4 sm:px-1 md:px-5 py-5">
+          <div className="flex justify-between align-middle">
+            <div>
+              <h5 className="first-letter:uppercase max-w-32 bg-indigo-100 text-indigo-800 text-xl font-medium px-2 dark:bg-indigo-900 dark:text-indigo-100 rounded-md">
+                {user}
+              </h5>
+            </div>
+            <div className="text-center text-slate-500 text-xs">
+              Updated: <DateTime dateTimeString={blog.updatedAt} />
+            </div>
+          </div>
+
+          <div className="flex-row justify-between mt-5">
+            <h5 className="text-xl font-bold tracking-tight first-letter:uppercase">
               {title}
-            </h5>
-
-            <h5 className="bg-indigo-100 text-indigo-800 text-xl font-medium px-2 dark:bg-indigo-900 dark:text-indigo-300 rounded-md">
-              {user}
             </h5>
           </div>
 
-          <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+          <p className="mt-1 font-normal text-gray-700 dark:text-gray-400 md:text-justify sm:text-sm">
             {content}
           </p>
 
-          <div className="text-center border-t-2 border-neutral-100 pt-4 text-surface/75 dark:border-white/10 dark:text-neutral-300">
-            {createdAt.toString().substring(0, 10)}{" "}
-            {createdAt.toString().substring(11, 16)}
-          </div>
+          {/* Conditionally render the button */}
+          {isOwner && access && (
+            <>
+              <div className="mt-5 flex justify-between">
+                <button className="btn btn-sm btn-error" onClick={handleDelete}>
+                  Delete
+                </button>
+                <Link
+                  href={`/blogs/${id}/update`}
+                  className="btn btn-sm btn-primary mr-2"
+                >
+                  Update
+                </Link>
+              </div>
+              <div className="mt-5 text-center text-slate-500 text-xs">
+                Created: <DateTime dateTimeString={createdAt} />
+              </div>
+            </>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

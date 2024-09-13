@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 import { Blog } from "../interfaces/Blog";
 
 interface Props {
@@ -20,23 +20,28 @@ const BlogCard = ({ blog }: Props) => {
   });
 
   return (
-    <div className="m-5 flex-row max-w-sm border bg-slate-200 border-gray-200 rounded-lg shadow">
+    <div className="my-4 mx-2 flex-row max-w-sm border bg-slate-200 border-gray-200 rounded-lg transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-105 duration-100">
       <Link href={`blogs/${id}`}>
         <div>
-          <img
-            className="rounded-t-lg w-96 h-96 object-cover"
+          <Image
+            className="rounded-t-lg w-96 sm:h-56 md:h-96  object-cover"
             src={image}
             alt={summerized}
+            height={500}
+            width={500}
+            priority
           />
         </div>
       </Link>
 
-      <div className="p-5">
+      <div className="px-2 pt-3 md:px-5 md:py-4">
         <div className="flex justify-between mb-2">
           <Link href={`blogs/${id}`}>
-            <h5 className="text-2xl font-bold tracking-tight">{summerized}</h5>
+            <h5 className="text-sm md:text-xl font-bold tracking-tight">
+              {summerized}
+            </h5>
           </Link>
-          <h5 className="bg-indigo-100 text-indigo-800 text-xl font-medium px-2 dark:bg-indigo-900 dark:text-indigo-100 rounded-md">
+          <h5 className="bg-indigo-100 text-indigo-800 text-sm md:text-xl font-medium px-2 dark:bg-indigo-900 dark:text-indigo-100 rounded-md h-3/4 first-letter:uppercase">
             {user}
           </h5>
         </div>
